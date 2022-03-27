@@ -2,7 +2,7 @@ import socket
 import threading
 
 host = '127.0.0.1'
-port = 55571
+port = 55561
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((host,port))
@@ -26,13 +26,11 @@ def handle(client):
         try:
             message = client.recv(1024)
             broadcast(message)
-            if(message=="hi"):
-                print("welcomeee !")
         except:
             index = clients.index(client)
-            cliens.remove(client)
+            clients.remove(client)
             client.close()
-            nickname = nickname[index]
+            nickname = nicknames[index]
             broadcast(f'{nickname} left the chat !'.encode('ascii'))                                                                                        
             nicknames.remove(nickname)
             break
@@ -41,12 +39,10 @@ def handle(client):
 def receive():
     while True:
         client, address = server.accept()
-        print(f'Conncted with {str(address)}')
+        print(f'Connected with {str(address)}')
 
-        #client.send('NICk'.encode('ascii'))
-
+        client.send('nickname?'.encode('ascii'))
         nickname = client.recv(1024).decode('ascii')
-
         nicknames.append(nickname)
         clients.append(client)
         print(f'Nickname of the client is {nickname} !')
