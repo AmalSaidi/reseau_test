@@ -5,14 +5,17 @@ import threading
 nickname = input("Choose a nickname : ")
 
 client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1',55571))
+client.connect(('127.0.0.1',55561))
 
 
 def receive():
     while True:
-        try:    
+        try:
             message = client.recv(1024).decode('ascii')
-            print(message)
+            if message == "nickname?":
+                client.send(nickname.encode('utf-8'))
+            else:
+                print(message)
         except:
             print("an error has occured!")
             client.close()
@@ -22,8 +25,6 @@ def receive():
 def write():
     while True:
         message = f'{nickname} : {input("")}'
-        if message[len(nickname)+2:].startswith('quit'):
-            print("im gonna kick u out")
         client.send(message.encode('ascii'))
         
 
@@ -32,6 +33,8 @@ receive_thread.start()
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
+
+
 
 
 
