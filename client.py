@@ -5,7 +5,7 @@ import threading
 nickname = input("Choose a nickname : ")
 
 client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1',55561))
+client.connect(('127.0.0.1',55573))
 
 
 def receive():
@@ -24,8 +24,15 @@ def receive():
 
 def write():
     while True:
-        message = f'{nickname} : {input("")}'
-        client.send(message.encode('ascii'))
+        message = f'{nickname}: {input("")}'
+        if message[len(nickname)+2:].startswith('/QUIT'):
+            print("quitting session")
+            #client.send(f'QUIT {message[len(nickname)+2+6:]}'.encode('ascii'))
+        elif message[len(nickname)+2:].startswith('/LIST'):
+            print("List of connected users is :")
+            client.send(f'LIST {message[len(nickname)+2+6:]}'.encode('ascii'))
+        else:
+            client.send(message.encode('ascii'))
         
 
 receive_thread = threading.Thread(target=receive)
@@ -33,6 +40,8 @@ receive_thread.start()
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
+
+
 
 
 
