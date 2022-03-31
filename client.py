@@ -1,3 +1,5 @@
+
+
 import socket
 import threading
 
@@ -5,7 +7,7 @@ import threading
 nickname = input("Choose a nickname : ")
 
 client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1',55573))
+client.connect(('127.0.0.1',9200))
 
 
 def receive():
@@ -25,12 +27,22 @@ def receive():
 def write():
     while True:
         message = f'{nickname}: {input("")}'
-        if message[len(nickname)+2:].startswith('/QUIT'):
+        commande = message.split(" ",2)
+        if commande[1] == "QUIT":
             print("quitting session")
-            #client.send(f'QUIT {message[len(nickname)+2+6:]}'.encode('ascii'))
-        elif message[len(nickname)+2:].startswith('/LIST'):
-            print("List of connected users is :")
-            client.send(f'LIST {message[len(nickname)+2+6:]}'.encode('ascii'))
+            client.send('QUIT'.encode('ascii'))
+
+        elif commande[1] == "LIST":
+            client.send('LIST'.encode('ascii'))
+
+        elif commande[1] == "HELP":
+            client.send('HELP'.encode('ascii'))
+
+        elif commande[1] == "EDIT":
+            client.send(f'EDIT {commande[2]}'.encode('ascii'))
+
+        elif commande[1] == "CHAT":
+            client.send(f'CHAT {commande[2]}'.encode('ascii'))
         else:
             client.send(message.encode('ascii'))
         
@@ -40,10 +52,3 @@ receive_thread.start()
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
-
-
-
-
-
-
-
