@@ -1,54 +1,48 @@
 
-
 import socket
 import threading
 
 
-nickname = input("Choose a nickname : ")
+class Client():
+    def __init__(self,nickname,address,port):
+        self.nickname = nickname
+        self.address = address
+        self.port = port
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(('127.0.0.1',9200))
+    """nickname = input("Choose a nickname : ")
+    client=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect(('127.0.0.1',9184))
+    """
+    def connect(self):
+        self.client.connect((self.address,self.port))
+
+    def receive(self):
+        while True:
+            try:
+                message = self.client.recv(1024).decode('ascii')
+                if message == "nickname?":
+                    self.client.send(self.nickname.encode('utf-8'))
+                else:
+                    print(message)
+            except:
+                print("an error has occured!")
+                self.client.close()
+                break
 
 
-def receive():
-    while True:
-        try:
-            message = client.recv(1024).decode('ascii')
-            if message == "nickname?":
-                client.send(nickname.encode('utf-8'))
-            else:
-                print(message)
-        except:
-            print("an error has occured!")
-            client.close()
-            break
+    def write(self):
+        while True:
+            message = f'{self.nickname}: {input("")}'
+            self.client.send(message.encode('ascii'))
+            
 
+nickname = input("choose a nickname:")
+client = Client(nickname,"127.0.0.1",9110)
 
-def write():
-    while True:
-        message = f'{nickname}: {input("")}'
-        commande = message.split(" ",2)
-        if commande[1] == "QUIT":
-            print("quitting session")
-            client.send('QUIT'.encode('ascii'))
-
-        elif commande[1] == "LIST":
-            client.send('LIST'.encode('ascii'))
-
-        elif commande[1] == "HELP":
-            client.send('HELP'.encode('ascii'))
-
-        elif commande[1] == "EDIT":
-            client.send(f'EDIT {commande[2]}'.encode('ascii'))
-
-        elif commande[1] == "CHAT":
-            client.send(f'CHAT {commande[2]}'.encode('ascii'))
-        else:
-            client.send(message.encode('ascii'))
-        
-
-receive_thread = threading.Thread(target=receive)
+client.connect()
+receive_thread = threading.Thread(target=client.receive)
 receive_thread.start()
 
-write_thread = threading.Thread(target=write)
+write_thread = threading.Thread(target=client.write)
 write_thread.start()
